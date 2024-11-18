@@ -5,12 +5,10 @@ import dash
 import plotly.figure_factory as ff
 import dash_bootstrap_components as dbc
 import plotly.express as px
-import webbrowser
-from threading import Timer
-
-
-
-
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+from sklearn.decomposition import PCA
 
 
 # Construct the full path to the dataset
@@ -71,7 +69,89 @@ data_no_outliers = remove_outliers(data.copy(), numerical_columns)
 numerical_columns_no_outliers = data_no_outliers.select_dtypes(include='number')
 correlation_matrix_no_outliers = numerical_columns_no_outliers.corr()
 
+# Load data
+autokunder_data = pd.read_csv(filsokvag, delimiter=';')
 
+# Data preparation
+features = autokunder_data[['Totalt kapital på Avanza', 'Totalt kapital i Auto', 
+                            'Kapital i aktier', 'Kapital i fonder (inklusive Auto)', 
+                            'Inloggade dagar senaste månaden']].fillna(0)
+
+# Standardizing features
+scaler = StandardScaler()
+features_scaled = scaler.fit_transform(features)
+
+# Using the Elbow Method and Silhouette Score to determine optimal clusters
+wcss = []  # Within-cluster sum of squares
+silhouette_scores = []
+
+cluster_range = range(2, 11)
+for k in cluster_range:
+    kmeans_test = KMeans(n_clusters=k, random_state=42)
+    cluster_labels = kmeans_test.fit_predict(features_scaled)
+    wcss.append(kmeans_test.inertia_)  # Sum of squared distances to closest cluster center
+    
+    # Calculate silhouette score for k > 1
+    silhouette_avg = silhouette_score(features_scaled, cluster_labels)
+    silhouette_scores.append(silhouette_avg)
+
+# Create Elbow Method graph
+fig_elbow = go.Figure()
+fig_elbow.add_trace(go.Scatter(x=list(cluster_range), y=wcss, mode='lines+markers', name='WCSS'))
+fig_elbow.update_layout(
+    title='Optimal antal kluster med Elbow-metoden',
+    xaxis_title='Antal kluster',
+    yaxis_title='WCSS',
+    template='plotly_white'
+)
+
+# Create Silhouette Score graph
+fig_silhouette = go.Figure()
+fig_silhouette.add_trace(go.Scatter(x=list(cluster_range), y=silhouette_scores, mode='lines+markers', name='Silhouette Score', marker=dict(color='orange')))
+fig_silhouette.update_layout(
+    title='Optimal antal kluster med Silhouette Score',
+    xaxis_title='Antal kluster',
+    yaxis_title='Silhouette Score',
+    template='plotly_white'
+)
+
+# Applying K-means clustering with 9 clusters
+kmeans_9 = KMeans(n_clusters=9, random_state=42)
+clusters_9 = kmeans_9.fit_predict(features_scaled)
+
+# Perform PCA for visualization
+features_pca_9 = PCA(n_components=2).fit_transform(features_scaled)
+
+# Visualize clusters
+pca_df = pd.DataFrame(features_pca_9, columns=['PCA Komponent 1', 'PCA Komponent 2'])
+pca_df['Cluster'] = clusters_9
+
+fig_9_clusters = px.scatter(
+    pca_df, x='PCA Komponent 1', y='PCA Komponent 2',
+    color=pca_df['Cluster'].astype(str),
+    title='Kundsegmentering med K-means (9 Kluster, 2D PCA)',
+    labels={'color': 'Cluster'},
+    template='plotly_white'
+)
+
+# Applying K-means clustering with 9 clusters
+kmeans_6 = KMeans(n_clusters=6, random_state=42)
+clusters_6 = kmeans_6.fit_predict(features_scaled)
+
+# Perform PCA for visualization
+features_pca_6 = PCA(n_components=2).fit_transform(features_scaled)
+
+# Visualize clusters
+pca_df = pd.DataFrame(features_pca_6, columns=['PCA Komponent 1', 'PCA Komponent 2'])
+pca_df['Cluster'] = clusters_6
+
+fig_6_clusters = px.scatter(
+    pca_df, x='PCA Komponent 1', y='PCA Komponent 2',
+    color=pca_df['Cluster'].astype(str),
+    title='Kundsegmentering med K-means (6 Kluster, 2D PCA)',
+    labels={'color': 'Cluster'},
+    template='plotly_white'
+)
 
 
 app = Dash(__name__)
@@ -494,7 +574,7 @@ memory usage: 2.1+ MB
         ],
         style={"textAlign": "left", "lineHeight": "1.6"}
     )
-    return create_slide(content, "Kod och Dataset: Struktur och Analys")
+    return create_slide(content, "1. Kod och Dataset: Struktur och Analys")
 
 
 def slide_unique_values():
@@ -558,12 +638,12 @@ Inloggade dagar senaste månaden: [ 1 24  3 11  0 14 13 17 21  5 22 10  2 19  4]
         ],
         style={"textAlign": "left", "lineHeight": "1.6"}
     )
-    return create_slide(content, "Unika värden i datasetet")
+    return create_slide(content, "1. Unika värden i datasetet")
 
 def slide_missing_negative_values():
     content = html.Div(
         children=[
-            html.H3("Kod och Dataset: Saknade och negativa värden", style={"marginBottom": "10px", "color": theme["heading_color"]}),
+            html.H3("1. Kod och Dataset: Saknade och negativa värden", style={"marginBottom": "10px", "color": theme["heading_color"]}),
             html.H4("Kodexempel", style={"marginBottom": "5px"}),
             html.Pre(
                 """
@@ -706,7 +786,7 @@ Name: count, dtype: int64
         ],
         style={"textAlign": "left", "lineHeight": "1.6"}
     )
-    return create_slide(content, "Deskriptiv statistik och kategoriska frekvenser")
+    return create_slide(content, "1. Deskriptiv statistik och kategoriska frekvenser")
 
 def slide_visualizations():
     content = html.Div(
@@ -853,7 +933,7 @@ def slide_visualizations():
         ],
         style={"textAlign": "left", "lineHeight": "1.6"},
     )
-    return create_slide(content, "Visualiseringar")
+    return create_slide(content, "1. Utforskande visualiseringar")
 
 def slide_gender_age_distribution():
     content = html.Div(
@@ -898,7 +978,7 @@ def slide_gender_age_distribution():
         ],
         style={"textAlign": "left", "lineHeight": "1.6"},
     )
-    return create_slide(content, "Köns- och åldersfördelning")
+    return create_slide(content, "2. Köns- och åldersfördelning")
 
 def slide_activity_and_auto_analysis():
     content = html.Div(
@@ -1008,12 +1088,12 @@ def slide_activity_and_auto_analysis():
         ],
         style={"textAlign": "left", "lineHeight": "1.6"},
     )
-    return create_slide(content, "Aktivitet och Auto-investeringar")
+    return create_slide(content, "2. Aktivitet och Auto-investeringar")
 
 def slide_further_investigation():
     content = html.Div(
         children=[
-            html.H3("Vad vi borde gräva vidare i", style={"marginBottom": "20px", "color": theme["heading_color"]}),
+            html.H3("3. Vad vi borde gräva vidare i", style={"marginBottom": "20px", "color": theme["heading_color"]}),
             
             # Kundsegmentering
             html.H4("1. Kundsegmentering", style={"marginBottom": "10px"}),
@@ -1037,7 +1117,7 @@ def slide_further_investigation():
             ),
 
             # Datasetets begränsningar
-            html.H4("Datasetet har vissa begränsningar", style={"marginBottom": "10px"}),
+            html.H4("3. Datasetet har vissa begränsningar", style={"marginBottom": "10px"}),
             html.Ul(
                 [
                     html.Li("Saknade datapunkter:"),
@@ -1079,8 +1159,113 @@ def slide_further_investigation():
         ],
         style={"textAlign": "left", "lineHeight": "1.6"},
     )
-    return create_slide(content, "Vidare undersökning")
+    return create_slide(content, "3. Vidare undersökning")
 
+def slide_clustering_analysis():
+    content = html.Div(
+        children=[
+            html.H3("Klustringsanalys: Visualiseringar", style={"marginBottom": "20px", "color": theme["heading_color"]}),
+            
+            # Elbow Method Graph
+            dbc.Card(
+                [
+                    dbc.CardHeader("Optimal antal kluster med Elbow-metoden", style={"textAlign": "center"}),
+                    dbc.CardBody(
+                        dcc.Graph(
+                            id="elbow-method-graph",
+                            figure=fig_elbow  # Assuming fig_elbow is already created in your code
+                        )
+                    ),
+                ],
+                style={"marginBottom": "30px"},
+            ),
+
+            # Silhouette Score Graph
+            dbc.Card(
+                [
+                    dbc.CardHeader("Silhouette Score för Klustring", style={"textAlign": "center"}),
+                    dbc.CardBody(
+                        dcc.Graph(
+                            id="silhouette-score-graph",
+                            figure=fig_silhouette  # Assuming fig_silhouette is already created in your code
+                        )
+                    ),
+                ],
+                style={"marginBottom": "30px"},
+            ),
+        ],
+        style={"textAlign": "left", "lineHeight": "1.6"},
+    )
+    return create_slide(content, "3. Klustringsanalys: Visualiseringar")
+
+def slide_clustering_visualizations():
+    content = html.Div(
+        children=[
+            html.H3("Kundsegmentering: Visualiseringar med K-means", style={"marginBottom": "20px", "color": theme["heading_color"]}),
+            
+            # 6 Clusters Visualization
+            dbc.Card(
+                [
+                    dbc.CardHeader("Kundsegmentering med K-means (6 Kluster)", style={"textAlign": "center"}),
+                    dbc.CardBody(
+                        dcc.Graph(
+                            id="six-clusters-graph",
+                            figure=fig_6_clusters  # Assuming fig_6_clusters is already created in your code
+                        )
+                    ),
+                ],
+                style={"marginBottom": "30px"},
+            ),
+
+            # 9 Clusters Visualization
+            dbc.Card(
+                [
+                    dbc.CardHeader("Kundsegmentering med K-means (9 Kluster)", style={"textAlign": "center"}),
+                    dbc.CardBody(
+                        dcc.Graph(
+                            id="nine-clusters-graph",
+                            figure=fig_9_clusters  # Assuming fig_9_clusters is already created in your code
+                        )
+                    ),
+                ],
+                style={"marginBottom": "30px"},
+            ),
+        ],
+        style={"textAlign": "left", "lineHeight": "1.6"},
+    )
+    return create_slide(content, "3. Kundsegmentering: Visualiseringar")
+
+def slide_thank_you():
+    content = html.Div(
+        children=[
+            html.H3("Tack för er tid!", style={"marginBottom": "20px", "color": theme["heading_color"], "textAlign": "center"}),
+            html.P(
+                "Om ni har några frågor eller funderingar, tveka inte att höra av er!",
+                style={"marginBottom": "20px", "textAlign": "center", "fontSize": "18px"}
+            ),
+            html.Div(
+                children=[
+                    html.P("Farzad Ashouri", style={"fontWeight": "bold", "textAlign": "center", "fontSize": "18px"}),
+                    html.P("E-post: ashouri.farzad@gmail.com", style={"textAlign": "center", "fontSize": "16px"}),
+                    html.P("Telefon: +46 (0) 70-742 23 39", style={"textAlign": "center", "fontSize": "16px"}),
+                ],
+                style={"marginBottom": "30px"}
+            ),
+            html.Div(
+                "Lycka till med era analyser och beslut!", 
+                style={"textAlign": "center", "fontStyle": "italic", "fontSize": "16px"}
+            )
+        ],
+        style={
+            "backgroundColor": theme["background_content"],
+            "padding": "40px",
+            "borderRadius": "10px",
+            "boxShadow": "0 4px 6px rgba(0, 0, 0, 0.1)",
+            "textAlign": "center",
+            "lineHeight": "1.6",
+        },
+    )
+    return create_slide(content, "Tack")
 
 
 
@@ -1091,7 +1276,8 @@ slides = [
             slide_dataset_analysis, slide_unique_values, slide_missing_negative_values,
             slide_descriptive_statistics, slide_visualizations, 
             slide_gender_age_distribution, slide_activity_and_auto_analysis,
-            slide_further_investigation
+            slide_further_investigation, slide_clustering_analysis,
+            slide_clustering_visualizations, slide_thank_you
             
         ]
 
@@ -1104,16 +1290,12 @@ app.layout = html.Div(
     },
     children=[
         dcc.Store(id="slide-index", data=0),  # To store the current slide index
-        html.Div(
-            id="slide-container",
-            style={"marginTop": "20px"},
-            children=[slides[0]()],
-        ),
+        # Navigation buttons placed at the top
         html.Div(
             style={
                 "display": "flex",
                 "justifyContent": "space-between",
-                "marginTop": "30px",
+                "marginBottom": "30px",  # Adjust margin for spacing below the buttons
             },
             children=[
                 html.Button(
@@ -1144,8 +1326,15 @@ app.layout = html.Div(
                 ),
             ],
         ),
+        # Slide container below the buttons
+        html.Div(
+            id="slide-container",
+            style={"marginTop": "20px"},
+            children=[slides[0]()],
+        ),
     ],
 )
+
 
 @callback(
     [Output("slide-container", "children"), Output("slide-index", "data")],
