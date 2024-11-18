@@ -890,40 +890,89 @@ def slide_visualizations():
                     dbc.CardBody(
                         html.Div(
                             [
-                                dbc.Row(
-                                    [
-                                        dbc.Col(
-                                            dcc.Graph(
-                                                id=f"boxplot-with-outliers-{num_col}-{cat_col}",
-                                                figure=px.box(
-                                                    data,
-                                                    x=cat_col,
-                                                    y=num_col,
-                                                    title=f"Boxplot av {num_col} fördelat på {cat_col} (med outliers)",
-                                                    labels={cat_col: cat_col, num_col: num_col},
-                                                    template="plotly",
+                                # First four boxplots
+                                *[
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                dcc.Graph(
+                                                    id=f"boxplot-with-outliers-{num_col}-{cat_col}",
+                                                    figure=px.box(
+                                                        data,
+                                                        x=cat_col,
+                                                        y=num_col,
+                                                        title=f"Boxplot av {num_col} fördelat på {cat_col} (med outliers)",
+                                                        labels={cat_col: cat_col, num_col: num_col},
+                                                        template="plotly",
+                                                    ),
                                                 ),
+                                                width=6,
                                             ),
-                                            width=6,
-                                        ),
-                                        dbc.Col(
-                                            dcc.Graph(
-                                                id=f"boxplot-without-outliers-{num_col}-{cat_col}",
-                                                figure=px.box(
-                                                    data_no_outliers,
-                                                    x=cat_col,
-                                                    y=num_col,
-                                                    title=f"Boxplot av {num_col} fördelat på {cat_col} (utan outliers)",
-                                                    labels={cat_col: cat_col, num_col: num_col},
-                                                    template="plotly",
+                                            dbc.Col(
+                                                dcc.Graph(
+                                                    id=f"boxplot-without-outliers-{num_col}-{cat_col}",
+                                                    figure=px.box(
+                                                        data_no_outliers,
+                                                        x=cat_col,
+                                                        y=num_col,
+                                                        title=f"Boxplot av {num_col} fördelat på {cat_col} (utan outliers)",
+                                                        labels={cat_col: cat_col, num_col: num_col},
+                                                        template="plotly",
+                                                    ),
                                                 ),
+                                                width=6,
                                             ),
-                                            width=6,
-                                        ),
-                                    ]
-                                )
-                                for num_col in numerical_columns
-                                for cat_col in categorical_columns
+                                        ]
+                                    )
+                                    for num_col, cat_col in zip(numerical_columns[:4], categorical_columns[:4])
+                                ],
+
+                                # Ellipsis to indicate skipped content
+                                html.Div(
+                                    "•••", 
+                                    style={
+                                        "textAlign": "center", 
+                                        "fontSize": "24px", 
+                                        "margin": "20px 0"
+                                    }
+                                ),
+
+                                # Last four boxplots
+                                *[
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                dcc.Graph(
+                                                    id=f"boxplot-with-outliers-{num_col}-{cat_col}",
+                                                    figure=px.box(
+                                                        data,
+                                                        x=cat_col,
+                                                        y=num_col,
+                                                        title=f"Boxplot av {num_col} fördelat på {cat_col} (med outliers)",
+                                                        labels={cat_col: cat_col, num_col: num_col},
+                                                        template="plotly",
+                                                    ),
+                                                ),
+                                                width=6,
+                                            ),
+                                            dbc.Col(
+                                                dcc.Graph(
+                                                    id=f"boxplot-without-outliers-{num_col}-{cat_col}",
+                                                    figure=px.box(
+                                                        data_no_outliers,
+                                                        x=cat_col,
+                                                        y=num_col,
+                                                        title=f"Boxplot av {num_col} fördelat på {cat_col} (utan outliers)",
+                                                        labels={cat_col: cat_col, num_col: num_col},
+                                                        template="plotly",
+                                                    ),
+                                                ),
+                                                width=6,
+                                            ),
+                                        ]
+                                    )
+                                    for num_col, cat_col in zip(numerical_columns[-4:], categorical_columns[-4:])
+                                ],
                             ]
                         )
                     ),
