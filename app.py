@@ -561,7 +561,7 @@ Inloggade dagar senaste månaden: [ 1 24  3 11  0 14 13 17 21  5 22 10  2 19  4]
 def slide_missing_negative_values():
     content = html.Div(
         children=[
-            html.H3("1. Kod och Dataset: Saknade och negativa värden", style={"marginBottom": "10px", "color": theme["heading_color"]}),
+            html.H3("Kod och Dataset: Saknade och negativa värden", style={"marginBottom": "10px", "color": theme["heading_color"]}),
             html.H4("Kodexempel", style={"marginBottom": "5px"}),
             html.Pre(
                 """
@@ -630,7 +630,7 @@ dtype: int64
         ],
         style={"textAlign": "left", "lineHeight": "1.6"}
     )
-    return create_slide(content, "Saknade och negativa värden")
+    return create_slide(content, "1. Saknade och negativa värden")
 
 def slide_descriptive_statistics():
     content = html.Div(
