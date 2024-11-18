@@ -1258,17 +1258,18 @@ app.layout = html.Div(
     },
     children=[
         dcc.Store(id="slide-index", data=0),  # To store the current slide index
-        # Navigation buttons placed at the top
+
+        # Navigation buttons at the top
         html.Div(
             style={
                 "display": "flex",
                 "justifyContent": "space-between",
-                "marginBottom": "30px",  # Adjust margin for spacing below the buttons
+                "marginBottom": "30px",  # Space below the top buttons
             },
             children=[
                 html.Button(
                     "Föregående",
-                    id="prev-slide",
+                    id="prev-slide-top",
                     n_clicks=0,
                     style={
                         "backgroundColor": theme["primary_color"],
@@ -1281,7 +1282,7 @@ app.layout = html.Div(
                 ),
                 html.Button(
                     "Nästa",
-                    id="next-slide",
+                    id="next-slide-top",
                     n_clicks=0,
                     style={
                         "backgroundColor": theme["primary_color"],
@@ -1294,31 +1295,81 @@ app.layout = html.Div(
                 ),
             ],
         ),
-        # Slide container below the buttons
+
+        # Slide container
         html.Div(
             id="slide-container",
             style={"marginTop": "20px"},
             children=[slides[0]()],
         ),
+
+        # Navigation buttons at the bottom
+        html.Div(
+            style={
+                "display": "flex",
+                "justifyContent": "space-between",
+                "marginTop": "30px",  # Space above the bottom buttons
+            },
+            children=[
+                html.Button(
+                    "Föregående",
+                    id="prev-slide-bottom",
+                    n_clicks=0,
+                    style={
+                        "backgroundColor": theme["primary_color"],
+                        "color": "#ffffff",
+                        "border": "none",
+                        "padding": "10px 20px",
+                        "borderRadius": "5px",
+                        "cursor": "pointer",
+                    },
+                ),
+                html.Button(
+                    "Nästa",
+                    id="next-slide-bottom",
+                    n_clicks=0,
+                    style={
+                        "backgroundColor": theme["primary_color"],
+                        "color": "#ffffff",
+                        "border": "none",
+                        "padding": "10px 20px",
+                        "borderRadius": "5px",
+                        "cursor": "pointer",
+                    },
+                ),
+            ],
+        ),
     ],
 )
 
-
 @callback(
     [Output("slide-container", "children"), Output("slide-index", "data")],
-    [Input("prev-slide", "n_clicks"), Input("next-slide", "n_clicks")],
+    [
+        Input("prev-slide-top", "n_clicks"),
+        Input("next-slide-top", "n_clicks"),
+        Input("prev-slide-bottom", "n_clicks"),
+        Input("next-slide-bottom", "n_clicks"),
+    ],
     State("slide-index", "data"),
 )
-def update_slide(prev_clicks, next_clicks, slide_index):
+def update_slide(prev_top, next_top, prev_bottom, next_bottom, slide_index):
     ctx = dash.callback_context
     if not ctx.triggered:
         return [slides[slide_index](), slide_index]
+
+    # Determine which button was clicked
     triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
-    if triggered_id == "next-slide":
+    
+    # Update slide index based on the button clicked
+    if triggered_id in ["next-slide-top", "next-slide-bottom"]:
         slide_index = (slide_index + 1) % len(slides)
-    elif triggered_id == "prev-slide":
+    elif triggered_id in ["prev-slide-top", "prev-slide-bottom"]:
         slide_index = (slide_index - 1) % len(slides)
+
+    # Return updated slide and index
     return [slides[slide_index](), slide_index]
+
+
 
 
 
