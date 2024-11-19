@@ -1336,7 +1336,7 @@ def slide_clustering_visualizations():
         ],
         style={"textAlign": "left", "lineHeight": "1.6"},
     )
-    return create_slide(content, "3. Två dimmensionell representation av resultatet av kundsegmentering med K-means metoden")
+    return create_slide(content, "3. Tvådimensionell representation av resultatet av kundsegmentering med K-means metoden")
 
 
 
