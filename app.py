@@ -25,8 +25,8 @@ auto_columns = [
 ]
 auto_capital = data[auto_columns].sum().reset_index()
 auto_capital.columns = ["Auto-produkter", "Totalt kapital"]
-gender_distribution = data['Kön'].value_counts()
-age_distribution = data['Åldersintervall'].value_counts()
+gender_distribution = data['Kön'].value_counts().to_frame(name='Antal')
+age_distribution = data['Åldersintervall'].value_counts().to_frame(name='Antal')
 login_distribution = data["Inloggade dagar senaste månaden"].value_counts().reset_index()
 login_distribution.columns = ["Inloggade dagar", "Antal kunder"]
 capital_by_gender = data.groupby("Kön")["Totalt kapital på Avanza"].mean().reset_index()
@@ -1335,7 +1335,7 @@ def slide_clustering_visualizations():
         ],
         style={"textAlign": "left", "lineHeight": "1.6"},
     )
-    return create_slide(content, "3. 2 dimmensionell representation av resultatet av kundsegmentering med K-means metoden")
+    return create_slide(content, "3. Två dimmensionell representation av resultatet av kundsegmentering med K-means metoden")
 
 
 
