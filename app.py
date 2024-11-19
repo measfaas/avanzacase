@@ -978,6 +978,30 @@ def slide_visualizations():
     )
     return create_slide(content, "1. Utforskande visualiseringar")
 
+def slide_question_autokunder():
+    content = html.Div(
+        children=[
+            html.H1(
+                "Utifrån datasetet, vad kan du säga om Autokunderna?", 
+                style={
+                    "margin": "0 auto", 
+                    "color": theme["heading_color"], 
+                    "textAlign": "center",
+                    "fontSize": "32px",
+                }
+            ),
+        ],
+        style={
+            "display": "flex",
+            "alignItems": "center",
+            "justifyContent": "center",
+            "height": "100vh",
+            "backgroundColor": theme["background_content"],
+            "borderRadius": "10px",
+            "boxShadow": "0 4px 6px rgba(0, 0, 0, 0.1)",
+        },
+    )
+    return create_slide(content, " ")
 
 def slide_gender_age_distribution():
     content = html.Div(
@@ -1379,7 +1403,7 @@ slides = [
             slide_challenges, slide_ml_models, 
             slide_churn_example, slide_customer_analysis,
             slide_dataset_analysis, slide_unique_values, slide_missing_negative_values,
-            slide_descriptive_statistics, slide_visualizations, 
+            slide_descriptive_statistics, slide_visualizations, slide_question_autokunder,
             slide_gender_age_distribution, slide_activity_and_auto_analysis,
             slide_further_investigation, slide_features, slide_clustering_analysis,
             slide_clustering_visualizations, slide_thank_you
