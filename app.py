@@ -5,10 +5,6 @@ import dash
 import plotly.figure_factory as ff
 import dash_bootstrap_components as dbc
 import plotly.express as px
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score
-from sklearn.decomposition import PCA
 
 
 # Construct the full path to the dataset
@@ -40,7 +36,12 @@ capital_by_age = data.groupby("Åldersintervall")["Totalt kapital på Avanza"].m
 
 
 login_activity = data.groupby(['Kön', 'Åldersintervall'])['Inloggade dagar senaste månaden'].mean().unstack()
-activity_vs_capital = data.groupby('Kön')[['Totalt kapital på Avanza', 'Inloggade dagar senaste månaden']].mean()
+average_capital = data.groupby('Kön')[['Totalt kapital på Avanza']].mean()
+median_capital = data.groupby('Kön')[['Totalt kapital på Avanza']].median()
+
+activity_vs_capital = data.groupby('Kön')[['Totalt kapital på Avanza', 'Inloggade dagar senaste månaden']].median()
+
+
 auto_investments = data.groupby('Åldersintervall')[
     ['Kapital i Avanza Auto 1', 'Kapital i Avanza Auto 2', 'Kapital i Avanza Auto 3',
      'Kapital i Avanza Auto 4', 'Kapital i Avanza Auto 5', 'Kapital i Avanza Auto 6']].sum()
@@ -69,7 +70,9 @@ data_no_outliers = remove_outliers(data.copy(), numerical_columns)
 numerical_columns_no_outliers = data_no_outliers.select_dtypes(include='number')
 correlation_matrix_no_outliers = numerical_columns_no_outliers.corr()
 
-
+auto_investments_no_outliers = data_no_outliers.groupby('Åldersintervall')[
+    ['Kapital i Avanza Auto 1', 'Kapital i Avanza Auto 2', 'Kapital i Avanza Auto 3',
+     'Kapital i Avanza Auto 4', 'Kapital i Avanza Auto 5', 'Kapital i Avanza Auto 6']].sum()
 
 
 app = Dash(__name__)
@@ -319,6 +322,30 @@ def slide_ml_models():
                     html.Li("Syfte: Förutsäga vilka kunder som riskerar att lämna produkten baserat på historisk data om användarbeteende, insättningar/uttag, och marknadsförhållanden.")
                 ],
                 style={"marginBottom": "15px"}
+            ),
+            html.H4("3. Rekommendationssystem", style={"marginBottom": "5px", "color": "gray"}),
+            html.Ul(
+                [
+                    html.Li("Modell: Collaborative Filtering eller Content-Based Filtering."),
+                    html.Li("Syfte: Ge kunder rekommendationer om lämplig risknivå eller sparplan baserat på deras beteende och andra liknande kunders profiler.")
+                ],
+                style={"marginBottom": "15px", "color": "gray"}
+            ),
+            html.H4("4. Risk- och avkastningsmodellering", style={"marginBottom": "5px", "color": "gray"}),
+            html.Ul(
+                [
+                    html.Li("Modell: Bayesian Networks eller regressionsmodeller."),
+                    html.Li("Syfte: Förstå och förutsäga portföljens riskjusterade avkastning baserat på marknadsdata och portföljallokering.")
+                ],
+                style={"marginBottom": "15px", "color": "gray"}
+            ),
+            html.H4("5. Tidserieanalys för AUM-prediktion", style={"marginBottom": "5px", "color": "gray"}),
+            html.Ul(
+                [
+                    html.Li("Modell: ARIMA, LSTM (Long Short-Term Memory Neural Networks), eller Prophet."),
+                    html.Li("Syfte: Förutsäga framtida tillväxt i Assets Under Management (AUM) baserat på historisk data och marknadsförhållanden.")
+                ],
+                style={"marginBottom": "15px", "color": "gray"}
             )
         ],
         style={"textAlign": "left", "lineHeight": "1.6"}
@@ -491,7 +518,7 @@ memory usage: 2.1+ MB
         ],
         style={"textAlign": "left", "lineHeight": "1.6"}
     )
-    return create_slide(content, "1. Kod och Dataset: Struktur och Analys")
+    return create_slide(content, "1. Med ett nytt dataset börjar jag med")
 
 
 def slide_unique_values():
@@ -623,7 +650,24 @@ dtype: int64
                     "overflowX": "scroll",
                     "whiteSpace": "pre-wrap",
                 },
+            ),
+            html.H4("Raden med det negativa värdet", style={"marginBottom": "5px"}),
+            html.Pre(
+                """
+Rader med negativa värden:
+Totalt kapital på Avanza  Totalt kapital i Auto  Kapital i Avanza Auto 1  Kapital i Avanza Auto 2  Kapital i Avanza Auto 3  Kapital i Avanza Auto 4  Kapital i Avanza Auto 5  Kapital i Avanza Auto 6  Kapital i aktier  Kapital i fonder (inklusive Auto)  Kund sedan år      Kön Åldersintervall  Inloggade dagar senaste månaden
+288000                      0                        0                        0                        0                        0                        0                        0                          -152000                                  0            2015        Företag      -                                   28
+                """,
+                style={
+                    "backgroundColor": "#f4f4f9",
+                    "padding": "10px",
+                    "borderRadius": "5px",
+                    "fontSize": "14px",
+                    "overflowX": "scroll",  # Ensures horizontal scrolling
+                    "whiteSpace": "pre",   # Prevents breaking lines
+                },
             )
+
         ],
         style={"textAlign": "left", "lineHeight": "1.6"}
     )
@@ -975,9 +1019,27 @@ def slide_activity_and_auto_analysis():
                         dcc.Graph(
                             id="activity-vs-capital",
                             figure=px.bar(
-                                activity_vs_capital,
-                                title="Genomsnittligt kapital och aktivitet (per kön)",
+                                average_capital,
+                                title="Genomsnittligt kapital (per kön)",
                                 labels={"value": "Genomsnitt", "index": "Kön"},
+                                color_discrete_sequence=["#00CC96"],
+                            ),
+                        )
+                    ),
+                ],
+                style={"marginBottom": "30px"},
+            ),
+            
+            dbc.Card(
+                [
+                    dbc.CardHeader("Medianen är mer representativ när man pratar förmögenhet och kapital för att minska betydelsen av outliers men vi ser att företag fortfarande dominerar", style={"textAlign": "center"}),
+                    dbc.CardBody(
+                        dcc.Graph(
+                            id="activity-vs-capital",
+                            figure=px.bar(
+                                median_capital,
+                                title="Median kapital (per kön)",
+                                labels={"value": "Median", "index": "Kön"},
                                 color_discrete_sequence=["#00CC96"],
                             ),
                         )
@@ -996,6 +1058,25 @@ def slide_activity_and_auto_analysis():
                             figure=px.bar(
                                 auto_investments,
                                 title="Totalt Auto-kapital per åldersgrupp",
+                                labels={"value": "Kapital i Auto-produkter", "index": "Åldersintervall"},
+                                barmode="stack",
+                                color_discrete_sequence=px.colors.qualitative.Safe,
+                            ),
+                        )
+                    ),
+                ],
+                style={"marginBottom": "30px"},
+            ),
+            
+            dbc.Card(
+                [
+                    dbc.CardHeader("Vi ser att åldersgruppen 41-50 faller rejält när vi tar bort outliers", style={"textAlign": "center"}),
+                    dbc.CardBody(
+                        dcc.Graph(
+                            id="auto-investments_no_outliers",
+                            figure=px.bar(
+                                auto_investments_no_outliers,
+                                title="Totalt Auto-kapital per åldersgrupp (utan outliers)",
                                 labels={"value": "Kapital i Auto-produkter", "index": "Åldersintervall"},
                                 barmode="stack",
                                 color_discrete_sequence=px.colors.qualitative.Safe,
@@ -1087,12 +1168,17 @@ def slide_further_investigation():
                     html.Ul(
                         [
                             html.Li("Tidsdimension: Data är 'statisk' och fångar inte utvecklingen över tid för kunder."),
+                            html.Li("Kunder som avsutat sitt engagemang i Avanza."),
+                            html.Li("Kunder som avsutat sitt engagemang i Avanza auto produkter men har fortfarande kvar andra engagemang i Avanza."),
                             html.Li("Flöden: Insättningar och uttag över tid."),
                             html.Li("Inkomstnivå eller ekonomisk status: Kan ge kontext till deras investeringskapacitet."),
                             html.Li("Utbildningsnivå eller ekonomisk kunskap: Hjälper att förstå deras preferenser för självstyrda investeringar vs. automatiserade lösningar."),
                             html.Li("Geografisk fördelning: Kan visa regionala skillnader i investeringsbeteenden."),
-                            html.Li("Engagemang utanför inloggningar: Exempelvis deltagande i seminarier eller kontakt med rådgivare."),
-                            html.Li("Livshändelser: Större ekonomiska händelser som kan påverka sparande eller investeringsmönster."),
+                            html.Li("Engagemang utanför inloggningar: Exempelvis lyssnar på Avanzapodden eller följer Avanza bloggar"),
+                            html.Li(
+                                "Livshändelser: Större ekonomiska händelser som kan påverka sparande eller investeringsmönster.",
+                                style={"color": "gray"}  # Add inline style here
+                            ),
                         ]
                     ),
                 ],
@@ -1124,15 +1210,35 @@ def slide_further_investigation():
     )
     return create_slide(content, "3. Vidare undersökning")
 
+def slide_features():
+    content = html.Div(
+        children=[
+            
+            # Kundsegmentering
+            html.H4("Features (input för modell)", style={"marginBottom": "10px"}),
+            html.Ul(
+                [
+                    html.Li("Totalt kapital på Avanza"),
+                    html.Li("Totalt kapital i Auto"),
+                    html.Li("Kapital i aktier', 'Kapital i fonder (inklusive Auto)"),
+                    html.Li("Inloggade dagar senaste månaden"),
+                ],
+                style={"marginBottom": "20px"}
+            ),
+
+        ],
+        style={"textAlign": "left", "lineHeight": "1.6"},
+    )
+    return create_slide(content, "3. Vi testar en K-means med dessa features")
+
+
 def slide_clustering_analysis():
     content = html.Div(
         children=[
-            html.H3("Klustringsanalys: Visualiseringar", style={"marginBottom": "20px", "color": theme["heading_color"]}),
-            
             # Elbow Method Graph
             dbc.Card(
                 [
-                    dbc.CardHeader("Optimal antal kluster med Elbow-metoden", style={"textAlign": "center"}),
+                    dbc.CardHeader("Elbow-metoden identifierar 5 till 6 antal kluster", style={"textAlign": "center"}),
                     dbc.CardBody(
                         html.Iframe(
                             src="/assets/elbow_method.html",  # Assuming the file is in the 'assets' folder
@@ -1150,7 +1256,7 @@ def slide_clustering_analysis():
             # Silhouette Score Graph
             dbc.Card(
                 [
-                    dbc.CardHeader("Silhouette Score för Klustring", style={"textAlign": "center"}),
+                    dbc.CardHeader("Silhouette Score identifierar 9 till 10 som de mest optimala antal kluster", style={"textAlign": "center"}),
                     dbc.CardBody(
                         html.Iframe(
                             src="/assets/silhouette_score.html",  # Assuming the file is in the 'assets' folder
@@ -1167,17 +1273,15 @@ def slide_clustering_analysis():
         ],
         style={"textAlign": "left", "lineHeight": "1.6"},
     )
-    return create_slide(content, "3. Klustringsanalys: Visualiseringar")
+    return create_slide(content, "3. Vi börjar med att försöka identifiera optimalt antal kluster med hjälp av Elbow-metoden och Silhouette Score")
 
 def slide_clustering_visualizations():
     content = html.Div(
         children=[
-            html.H3("Kundsegmentering: Visualiseringar med K-means", style={"marginBottom": "20px", "color": theme["heading_color"]}),
             
             # Embed the pre-generated HTML file
             dbc.Card(
                 [
-                    dbc.CardHeader("Kundsegmentering med K-means (förgenererad visualisering)", style={"textAlign": "center"}),
                     dbc.CardBody(
                         html.Iframe(
                             src="/assets/cluster_visualization.html",  # Assuming the file is in the 'assets' folder
@@ -1194,7 +1298,7 @@ def slide_clustering_visualizations():
         ],
         style={"textAlign": "left", "lineHeight": "1.6"},
     )
-    return create_slide(content, "3. Kundsegmentering: Visualiseringar")
+    return create_slide(content, "3. 2 dimmensionell representation av resultatet av kundsegmentering med K-means metoden")
 
 
 
@@ -1215,7 +1319,7 @@ def slide_thank_you():
                 style={"marginBottom": "30px"}
             ),
             html.Div(
-                "Lycka till med era analyser och beslut!", 
+                "Hoppas vi kan göra fler analyser tillsammans!", 
                 style={"textAlign": "center", "fontStyle": "italic", "fontSize": "16px"}
             )
         ],
@@ -1239,7 +1343,7 @@ slides = [
             slide_dataset_analysis, slide_unique_values, slide_missing_negative_values,
             slide_descriptive_statistics, slide_visualizations, 
             slide_gender_age_distribution, slide_activity_and_auto_analysis,
-            slide_further_investigation, slide_clustering_analysis,
+            slide_further_investigation, slide_features, slide_clustering_analysis,
             slide_clustering_visualizations, slide_thank_you
             
         ]
