@@ -1257,7 +1257,8 @@ def slide_features():
                 [
                     html.Li("Totalt kapital på Avanza"),
                     html.Li("Totalt kapital i Auto"),
-                    html.Li("Kapital i aktier', 'Kapital i fonder (inklusive Auto)"),
+                    html.Li("Kapital i aktier"),
+                    html.Li("Kapital i fonder (inklusive Auto)"),
                     html.Li("Inloggade dagar senaste månaden"),
                 ],
                 style={"marginBottom": "20px"}
