@@ -115,6 +115,46 @@ def create_slide(content, slide_title):
         ],
     )
 
+
+def slide_intro():
+    content = html.Div(
+        children=[
+            html.H1(
+                "Case till intervju", 
+                style={
+                    "marginBottom": "20px", 
+                    "color": theme["heading_color"], 
+                    "textAlign": "center"
+                }
+            ),
+            html.H2(
+                "Data Analyst/Data Scientist", 
+                style={
+                    "marginBottom": "20px", 
+                    "color": theme["text_color"], 
+                    "textAlign": "center"
+                }
+            ),
+            html.H3(
+                "Nov 2024", 
+                style={
+                    "color": theme["secondary_color"], 
+                    "textAlign": "center"
+                }
+            ),
+        ],
+        style={
+            "backgroundColor": theme["background_content"],
+            "padding": "40px",
+            "borderRadius": "10px",
+            "boxShadow": "0 4px 6px rgba(0, 0, 0, 0.1)",
+            "textAlign": "center",
+        },
+    )
+    return create_slide(content, " ")
+
+
+
 def slide_1():
     return create_slide(html.P("Din uppgift är att beskriva vilken analys du skulle göra för att utvärdera hur det går för Avanza Auto sedan lanseringen. Förklara vad du skulle fokusera på och vilka frågor som du ser som centrala. Det är okej att hitta på siffror för att visa konkreta exempel på hur analysen skulle se ut."), "Utvärdering Avanza Auto")
 
@@ -227,7 +267,6 @@ def slide_kpi():
 def slide_recommendation():
     content = html.Div(
         children=[
-            html.H3("Rekommendation för analysen", style={"marginBottom": "10px", "color": theme["heading_color"]}),
             html.P(
                 "Fokusera först på de KPI som tydligt visar tillväxt, kvalitet i förvaltning och kundnöjdhet:",
                 style={"marginBottom": "10px"}
@@ -241,7 +280,7 @@ def slide_recommendation():
                 style={"marginBottom": "20px"}
             ),
             html.P(
-                "Därefter kan du lägga till mer detaljerade KPI (t.ex. kundsegmentering eller hållbarhetsaspekter) för att få en djupare förståelse och identifiera förbättringsområden.",
+                "Därefter kan vi lägga till mer detaljerade KPI (t.ex. kundsegmentering eller marknadsaspekter) för att få en djupare förståelse och identifiera förbättringsområden.",
                 style={"marginBottom": "10px"}
             )
         ],
@@ -252,7 +291,6 @@ def slide_recommendation():
 def slide_challenges():
     content = html.Div(
         children=[
-            html.H3("Svårigheter och utmaningar", style={"marginBottom": "10px", "color": theme["heading_color"]}),
             html.H4("1. Tidsramar för utvärdering", style={"marginBottom": "5px"}),
             html.Ul(
                 [
@@ -306,7 +344,6 @@ def slide_challenges():
 def slide_ml_models():
     content = html.Div(
         children=[
-            html.H3("Relevanta maskininlärningsmodeller och tillämpningar", style={"marginBottom": "10px", "color": theme["heading_color"]}),
             html.H4("1. Kundsegmentering och klustring", style={"marginBottom": "5px"}),
             html.Ul(
                 [
@@ -350,7 +387,7 @@ def slide_ml_models():
         ],
         style={"textAlign": "left", "lineHeight": "1.6"}
     )
-    return create_slide(content, "Maskininlärningsmodeller och tillämpningar")
+    return create_slide(content, "Relevanta maskininlärningsmodeller och tillämpningar")
 
 
 def slide_churn_example():
@@ -1337,7 +1374,7 @@ def slide_thank_you():
 
 
 slides = [
-            slide_1, slide_2, slide_kpi, slide_recommendation, 
+            slide_intro, slide_1, slide_2, slide_kpi, slide_recommendation, 
             slide_challenges, slide_ml_models, 
             slide_churn_example, slide_customer_analysis,
             slide_dataset_analysis, slide_unique_values, slide_missing_negative_values,
@@ -1467,10 +1504,6 @@ def update_slide(prev_top, next_top, prev_bottom, next_bottom, slide_index):
 
     # Return updated slide and index
     return [slides[slide_index](), slide_index]
-
-
-
-
 
 
 if __name__ == "__main__":
