@@ -10,6 +10,17 @@ This Dash application was initially created as part of a job interview case to s
 ### Steps
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/yourproject.git
-pip install -r requirements.txt
+   git clone https://github.com/measfaas/avanzacase.git
+2. Navigate to the project directory:
+   ```bash
+   cd yourproject
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+
+4. Run the application:
+   ```bash
+   python app.py
+
+   
 
